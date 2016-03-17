@@ -1,0 +1,8 @@
+name = Greyhead Megamenu
+description = Provides a mega menu-style block which contains a menu with customisation options such as being able to inject a node on each mega menu pane, add a logo, etc.
+package = Greyhead Customisations
+core = 7.x
+version = 7.x-1.0-20160304
+
+;files[] =
+;dependencies[] =

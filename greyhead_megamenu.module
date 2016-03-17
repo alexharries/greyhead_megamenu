@@ -1,0 +1,338 @@
+<?php
+
+/**
+ * @file
+ * Greyhead Mega-Menu
+ */
+
+/**
+ * @TODO:
+ *
+ *      What's the best way to add the module's CSS and JS? In hook_block_view?
+ *
+ *      Functions:
+ *
+ *      Get/set block configuration
+ *      Block listing page
+ *      Add block page
+ *      - 1: Choose menu to base block on, block name and machine name
+ *      - 2: Set defaults - @see Evernote [on validated submit, block is saved]
+ *      - 3: Edit block screen
+ *      - 3a:
+ */
+
+/**
+ * Constants.
+ */
+
+// Default cache time: 15 minutes, in seconds.
+define('GREYHEAD_MEGAMENU_CACHE_TIME_DEFAULT', 60 * 15);
+
+/**
+ * Load in the .inc files.
+ *
+ * We do this outside of a Drupal bootstrap so the functions in that file are
+ * available as early as possible.
+ */
+include_once 'greyhead_megamenu.functions.inc';
+include_once 'greyhead_megamenu.classes.inc';
+
+/**
+ * Implements hook_init().
+ */
+function greyhead_megamenu_init() {
+  variable_set('greyhead_megamenu_cache_disabled', TRUE);
+  drupal_set_message('greyhead_megamenu_cache_disabled:on', 'status', FALSE);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function greyhead_megamenu_menu() {
+  $items = array();
+
+  $items['admin/structure/block/greyheadmegamenu'] = array(
+    'title' => 'Greyhead Mega-Menu',
+    'page callback' => 'greyhead_megamenu_admin_list_megamenus',
+    'access arguments' => array('access greyhead megamenu administration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/structure/block/greyheadmegamenu/list'] = array(
+    'title' => 'Megamenus',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 1,
+  );
+
+  $items['admin/structure/block/greyheadmegamenu/create'] = array(
+    'title' => 'Create',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('greyhead_megamenu_admin_create_megamenu'),
+    'access arguments' => array('edit greyhead megamenus'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+  );
+
+  $items['admin/structure/block/greyheadmegamenu/edit/%greyhead_megamenu_load'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('greyhead_megamenu_admin_edit_megamenu', 5),
+    'access arguments' => array('edit greyhead megamenus'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+  );
+
+  $items['admin/structure/block/greyheadmegamenu/settings'] = array(
+    'title' => 'Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('greyhead_megamenu_admin_settings'),
+    'access arguments' => array('administer greyhead megamenu'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function greyhead_megamenu_permission() {
+  $permissions = array(
+    'administer greyhead megamenu' => array(
+      'title' => t('Administer Greyhead Megamenu settings'),
+//      'description' => t(''),
+    ),
+    'edit greyhead megamenus' => array(
+      'title' => t('Edit mega-menus'),
+//      'description' => t(''),
+    ),
+    'add greyhead megamenus' => array(
+      'title' => t('Create mega-menus'),
+//      'description' => t(''),
+    ),
+    'access greyhead megamenu administration' => array(
+      'title' => t('Access Greyhead Megamenu administration homepage'),
+//      'description' => t(''),
+    ),
+  );
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function greyhead_megamenu_block_info() {
+  // Load configured blocks
+  $blocks = greyhead_megamenu_megamenus_list();
+
+  // Also add in the sample block used to demonstrate block placement.
+  $blocks['sample_block'] = array(
+    'info' => t('Sample block'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+    'status' => FALSE,
+//    'region' => 'navigation',
+    'visibility' => BLOCK_VISIBILITY_NOTLISTED,
+    // We implode an array of paths which we don't want to see this block
+    // displayed on, for code readability.
+//    'pages' => implode(array(
+//      '<front>',
+//      'user',
+//      'user/*',
+//      'users',
+//      'users/*',
+//    )),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function greyhead_megamenu_block_view($block_delta = '') {
+  // Is this the sample_block?
+  if ($block_delta == 'sample_block') {
+    // Just output a sample chunk of HTML.
+    return array(
+      // The block title.
+      'subject' => t('Greyhead Megamenu sample block'),
+      // The block's content, as a renderableableable array.
+      'content' => array(
+        '#markup' => t('This is a simple sample block which is used to demonstrate how you can display a Drupal block in a megamenu.'),
+      ),
+    );
+  }
+  else {
+    // Load the megamenu.
+    $megamenu = new greyhead_megamenu($block_delta);
+
+//    dpm($megamenu->configuration);
+//    dpm($megamenu);
+
+    $block = $megamenu->build();
+
+    return $block;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @param $existing
+ * @param $type
+ * @param $theme
+ * @param $path
+ *
+ * @return array
+ */
+function greyhead_megamenu_theme($existing, $type, $theme, $path) {
+  /**
+   * The variables passed to these theming functions should mirror quite
+   * closely the names and structure of the data in the configuration array for
+   * each menu.
+   */
+  return array(
+    'greyhead_megamenu_megamenu' => array(
+      'template' => 'greyhead-megamenu--megamenu',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+    ),
+    'greyhead_megamenu_megamenu_item' => array(
+      'template' => 'greyhead-megamenu--megamenu--item',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+//      'variables' => array(
+//        'id' => NULL,
+//        'tabtype' => NULL,
+//        'config' => NULL,
+//        'menulink' => NULL,
+//        'submenu' => NULL,
+//      ),
+    ),
+    'greyhead_megamenu_megamenu_item_menulink' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--menulink',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+    ),
+    'greyhead_megamenu_megamenu_item_insert' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--insert',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+    ),
+//    'greyhead_megamenu_megamenu_item_link' => array(
+////      'template' => 'greyhead-megamenu--megamenu--item',
+////      'path' => $path . '/templates',
+//      'variables' => array(
+//        'link' => NULL,
+//      ),
+//    ),
+    'greyhead_megamenu_submenu' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+    ),
+    'greyhead_megamenu_submenu_column' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu--column',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+//      'variables' => array(
+//        'column_classes' => NULL,
+//        'column_content' => NULL,
+//      ),
+    ),
+    'greyhead_megamenu_column_block' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu--column--block',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+//      'variables' => array(
+//        'block' => NULL,
+//      ),
+    ),
+    'greyhead_megamenu_column_node' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu--column--node',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+//      'variables' => array(
+//        'node' => NULL,
+//      ),
+    ),
+    'greyhead_megamenu_column_submenu' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu--column--submenu',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+    ),
+    'greyhead_megamenu_column_submenu_column' => array(
+      'template' => 'greyhead-megamenu--megamenu--item--submenu--column--submenu--column',
+      'path' => $path . '/templates',
+      'render element' => 'element',
+//      'variables' => array(
+//        'element' => NULL,
+//      ),
+    ),
+//    'greyhead_megamenu_' => array(
+//      'template' => 'greyhead-megamenu--',
+//      'path' => $path . '/templates',
+//      'variables' => array(
+//        '~' => NULL,
+//      ),
+//    ),
+  );
+}
+
+/**
+ * Theme function to display a sub-menu.
+ *
+ * @param array $variables
+ *
+ * @return string
+ */
+//function theme_greyhead_megamenu_column_submenu_item(array $variables) {
+//  $element = $variables['element'];
+//
+//  if ($element['#below']) {
+//    $submenu_children = drupal_render($element['#below']);
+//  }
+//
+//  $submenu_link = l($element['#title'], $element['#href'], $element['#localized_options']);
+//
+//  return '<div class="submenu"><h3' . drupal_attributes($element['#attributes']) . '>' . $submenu_link . '</h3> ' . $submenu_children . "</div>\n";
+//}
+
+/**
+ * Implements hook_exit().
+ */
+function greyhead_megamenu_exit($destination = NULL) {
+  // If any Megamenus are flagged as needing to be saved, do that now.
+  foreach (greyhead_megamenu_menus_loaded() as $megamenu_id => $megamenu) {
+    if ($megamenu->save_pending()) {
+      $megamenu->save();
+    }
+  }
+
+  // Save the list of Megamenus, if necessary.
+  greyhead_megamenu_megamenus_list(NULL, TRUE);
+}
+
+/**
+ * Implements hook_greyhead_megamenu_column_builder_callbacks_alter.
+ *
+ * @param $callback
+ * @param $column_content
+ */
+function greyhead_megamenu_greyhead_megamenu_column_builder_callbacks_alter(&$callback, $column_content) {
+  switch ($column_content['type']) {
+    case 'node':
+      $callback = 'greyhead_megamenu_column_content_node';
+      break;
+
+    case 'block':
+      $callback = 'greyhead_megamenu_column_content_block';
+      break;
+
+    case 'submenu':
+      $callback = 'greyhead_megamenu_column_content_submenu';
+      break;
+  }
+}

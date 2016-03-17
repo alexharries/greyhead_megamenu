@@ -1,0 +1,144 @@
+/* Display as a table so we can stretch cells proportionally. */
+div.greyhead-megamenu-container {
+  margin: 0 0 1em 0;
+}
+
+div.greyhead-megamenu {
+  display: table;
+  width: 100%;
+  position: relative;
+}
+
+div.greyhead-megamenu > ul.menu {
+  display: table-row;
+  list-style: none;
+  margin: 0;
+}
+
+div.greyhead-megamenu > ul.menu > li.menu-item {
+  display: table-cell;
+  vertical-align: top;
+}
+
+div.greyhead-megamenu .menu-item-inner {
+  text-align: center;
+}
+
+/* Top main menu links. */
+div.greyhead-megamenu > ul.menu > li > .menu-item-inner > a {
+  margin-right: 1px;
+}
+
+div.greyhead-megamenu > ul.menu > li > .menu-item-inner > a,
+div.greyhead-megamenu > ul.menu > li.social-icons-container .menu-item-inner {
+  display: block;
+  padding: 1em 1em 0.5em 1em;
+  background-color: #cfcfcf;
+  border-bottom: #fff 1px solid;
+  min-height: 50px;
+}
+
+div.greyhead-megamenu ul.menu > li:hover > .menu-item-inner > a {
+  background-color: #efefef;
+  border-bottom: 0;
+}
+
+div.greyhead-megamenu > ul.menu > li:last-child > .menu-item-inner > a {
+  margin-right: 0;
+}
+
+div.greyhead-megamenu .megamenu-container {
+  background-color: #efefef;
+
+  z-index: 10;
+
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+
+  height: 0;
+  transition-property: all;
+  transition-duration: 0.1s;
+  transition-timing-function: ease-out;
+}
+
+div.greyhead-megamenu li:hover .megamenu-container {
+  height: 1000px;
+  transition-property: all;
+  transition-duration: 0.1s;
+  transition-timing-function: ease-out;
+}
+
+div.greyhead-megamenu .megamenu-container .row {
+  text-align: left;
+  padding: 2em;
+}
+
+div.greyhead-megamenu .megamenu-container ul {
+  list-style: none;
+  padding: 0 0 0.5em 0;
+}
+
+div.greyhead-megamenu .megamenu-container ul.sub-menu ul.sub-menu {
+  padding-left: 1em;
+}
+
+div.greyhead-megamenu .sub-menu-container {
+  border: #888 0 solid;
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+
+div.greyhead-megamenu .menu-item-inner.social-icons-container {
+  text-align: right;
+}
+
+div.greyhead-megamenu ul.social-icons {
+  line-height: 1;
+  display: inline-block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+div.greyhead-megamenu ul.social-icons li {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  margin: 0 0 0 0.25em;
+}
+
+div.greyhead-megamenu ul.social-icons a {
+  display: inline-block;
+  overflow: hidden;
+  width: 20px;
+  height: 20px;
+  text-indent: -10000px;
+  background-color: #888;
+  padding: 0;
+}
+
+/* columns of same height styles */
+.inside-full-height {
+  height: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.row-height {
+  display: table;
+  table-layout: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+.col-height {
+  display: table-cell;
+  float: none;
+  height: 100%;
+}
+/* /columns of same height styles */
